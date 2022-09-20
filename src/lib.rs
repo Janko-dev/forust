@@ -1,18 +1,31 @@
 mod scanner;
 mod parser;
 
-pub use crate::equarust::run;
+pub use crate::forust::evaluate;
 
-pub mod equarust {
+pub mod forust {
     use crate::scanner::{Scanner};
-    use crate::parser::{parse};
-
+    use crate::parser::{parse, equal};
     
-    pub fn run(input: &str) {
+    pub fn evaluate(input: &str, minx: i32, maxx: i32, miny: i32, maxy: i32) -> Vec<[f64; 2]>{
         let mut scanner = Scanner::new(input);
         scanner.tokenize();
-        let result = parse(&mut scanner.tokens);
-        println!("{:?}", result);
+        let result = match parse(&mut scanner.tokens) {
+            Ok(e) => e,
+            Err(msg) => panic!("{}", msg),
+        };
+        
+        
+        let mut range: Vec<[f64; 2]> = Vec::new();
+        for x in minx..maxx {
+            for y in miny..maxy {
+                let clone = result.clone();
+                if Ok(true) == equal(clone, x, y) {
+                    range.push([x as f64, y as f64])
+                }
+            }    
+        }
+        range
     }
 }
 

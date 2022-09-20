@@ -2,7 +2,7 @@ use std::{iter::Peekable, slice::Iter};
 
 use crate::scanner::Token;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Expr<'a> {
     Binary(Box<Expr<'a>>, &'a Token<'a>, Box<Expr<'a>>),
     Unary(&'a Token<'a>, Box<Expr<'a>>),
@@ -11,7 +11,7 @@ pub enum Expr<'a> {
     Num(f64)
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Equation<'a> {
     pub left: Expr<'a>,
     pub right: Expr<'a>,
@@ -97,6 +97,45 @@ fn primary<'a>(tokens: &mut Peekable<Iter<'a, Token<'a>>>) -> Result<Expr<'a>, S
         Some(other) => Err(format!("Unexpected primary: {:?}", other)),
         None => Err(format!("Unexpected primary: None")),
     }
+}
+
+fn eval(expr: Expr, x: i32, y: i32) -> Result<f64, String> {
+    match expr {
+        Expr::Binary(l, op, r) => {
+            let left = eval(*l, x, y)?;
+            let right = eval(*r, x, y)?;
+            match op {
+                Token::Plus => Ok(left + right),
+                Token::Minus => Ok(left - right),
+                Token::Slash => Ok(left / right),
+                Token::Star => Ok(left * right),
+                Token::Pow => Ok(left.powf(right)),
+                other => Err(format!("Unknown operator: {:?}", other))
+            }
+        },
+        Expr::Unary(op, e) => {
+            let right = eval(*e, x, y)?;
+            match op {
+                Token::Minus => Ok(-right),
+                other => Err(format!("Unknown operator: {:?}", other))
+            }
+        },
+        Expr::Group(e) => eval(*e, x, y),
+        Expr::Num(n) => Ok(n),
+        Expr::Id(s) => {
+            match s {
+                "x" | "X" => Ok(x as f64),
+                "y" | "Y" => Ok(y as f64),
+                other => Err(format!("Unknown identifier: '{}'", other))
+            }
+        }
+    }
+}
+
+pub fn equal(eq: Equation, x: i32, y: i32) -> Result<bool, String> {
+    let left = eval(eq.left, x, y)?;
+    let right = eval(eq.right, x, y)?;
+    Ok(left == right)
 }
 
 #[cfg(test)]
