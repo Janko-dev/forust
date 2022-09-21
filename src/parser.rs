@@ -1,4 +1,4 @@
-use std::{iter::Peekable, slice::Iter};
+use std::{iter::Peekable, slice::Iter, fmt::Display};
 
 use crate::scanner::Token;
 
@@ -15,6 +15,31 @@ pub enum Expr<'a> {
 pub struct Equation<'a> {
     pub left: Expr<'a>,
     pub right: Expr<'a>,
+}
+
+impl<'a> Display for Equation<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} = {}", expr_to_string(&self.left), expr_to_string(&self.right))
+    }
+}
+
+pub fn expr_to_string(expr: &Expr) -> String {
+    match expr {
+        Expr::Binary(l, op, r) => {
+            match op {
+                Token::Plus => format!("{} + {}",  expr_to_string(&*l), expr_to_string(&*r)),
+                Token::Minus => format!("{} - {}", expr_to_string(&*l), expr_to_string(&*r)),
+                Token::Slash => format!("{} / {}", expr_to_string(&*l), expr_to_string(&*r)),
+                Token::Star => format!("{} * {}",  expr_to_string(&*l), expr_to_string(&*r)),
+                Token::Pow => format!("{}**{}",    expr_to_string(&*l), expr_to_string(&*r)),
+                _ => unreachable!(),
+            }
+        },
+        Expr::Group(e) => format!("({})", expr_to_string(&*e)),
+        Expr::Unary(_, r) => format!("-{}", expr_to_string(&*r)),
+        Expr::Num(n) => n.to_string(),
+        Expr::Id(s) => s.to_string(),
+    }
 }
 
 pub fn parse<'a>(tokens: &'a mut Vec<Token<'a>>) -> Result<Equation<'a>, String> {
