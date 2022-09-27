@@ -124,7 +124,7 @@ fn primary<'a>(tokens: &mut Peekable<Iter<'a, Token<'a>>>) -> Result<Expr<'a>, S
     }
 }
 
-fn eval(expr: Expr, x: i32, y: i32) -> Result<f64, String> {
+fn eval(expr: Expr, x: f64, y: f64) -> Result<f64, String> {
     match expr {
         Expr::Binary(l, op, r) => {
             let left = eval(*l, x, y)?;
@@ -157,7 +157,7 @@ fn eval(expr: Expr, x: i32, y: i32) -> Result<f64, String> {
     }
 }
 
-pub fn equal(eq: Equation, x: i32, y: i32) -> Result<bool, String> {
+pub fn equal(eq: Equation, x: f64, y: f64) -> Result<bool, String> {
     let left = eval(eq.left, x, y)?;
     let right = eval(eq.right, x, y)?;
     Ok(left == right)

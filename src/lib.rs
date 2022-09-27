@@ -5,9 +5,9 @@ pub use crate::forust::evaluate;
 
 pub mod forust {
     use crate::scanner::{Scanner};
-    use crate::parser::{parse, equal, Equation};
+    use crate::parser::{parse, equal};
     
-    pub fn evaluate(input: &str, minx: i32, maxx: i32, miny: i32, maxy: i32) -> Vec<[f64; 2]>{
+    pub fn evaluate(input: &str, (minx, maxx): (i32, i32), (miny, maxy): (i32, i32)) -> Vec<[f64; 2]>{
         let mut scanner = Scanner::new(input);
         scanner.tokenize();
         let result = match parse(&mut scanner.tokens) {
@@ -17,12 +17,12 @@ pub mod forust {
         
         
         let mut range: Vec<[f64; 2]> = Vec::new();
-        for x in minx..maxx {
-            for y in miny..maxy {
+        for x in (minx..maxx).map(|n| n as f64 * 0.1) {
+            for y in (miny..maxy).map(|n| n as f64 * 0.1) {
                 let clone = result.clone();
                 let eq = equal(clone, x, y);
                 if Ok(true) == eq {
-                    range.push([x as f64, y as f64])
+                    range.push([x * 10.0 as f64, y * 10.0 as f64])
                 } else if let Err(msg) = eq {
                     println!("{}", msg);   
                 }

@@ -4,8 +4,6 @@ extern crate graphics;
 extern crate opengl_graphics;
 extern crate piston;
 
-// use std::convert::TryInto;
-
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::event_loop::{EventSettings, Events};
@@ -23,28 +21,35 @@ impl App {
         use graphics::*;
 
         const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
-        const WHITE: [f32; 4] = [0.4, 0.8, 1.0, 0.9];
+        const LINE: [f32; 4] = [0.7, 0.2, 0.2, 1.0];
+        const BG: [f32; 4] = [0.2, 0.8, 0.85, 0.6];
+
+        let [w, h] = args.window_size;
 
         self.gl.draw(args.viewport(), |c, gl| {
             
-            clear(WHITE, gl);
+            let c = c.trans(w/2.0, h/2.0);
+
+            clear(BG, gl);
             
+            Line::new(BLACK, 1.0).draw_from_to(
+                [-w/2.0, 0.0], 
+                [w, 0.0], 
+                &c.draw_state, c.transform, gl);
+            
+            Line::new(BLACK, 1.0).draw_from_to(
+                [0.0, -h/2.0], 
+                [0.0, h], 
+                &c.draw_state, c.transform, gl);
             
             for i in 0..self.range.len() {
                 let curr = self.range.get(i).unwrap();
                 let next = self.range.get(i+1).unwrap_or(curr);
-                Line::new(BLACK, 2.0).draw_from_to(*curr, *next, &c.draw_state, c.transform, gl);
+                Line::new(LINE, 1.0)
+                    .draw_from_to(*curr, *next, &c.draw_state, c.transform, gl);
 
-
-                // let mut curr = self.range.get(i)
-                //         .unwrap_or(&[0.0, 0.0])
-                //         .to_vec();
-                // curr.push(4.0);
-                // curr.push(4.0);
-                // let curr = curr.try_into().unwrap_or([0.0, 0.0, 0.0, 0.0]);
-                //         // .try_into()
-                //         // .unwrap_or_else([0.0, 0.0, 0.0, 0.0]);
-                // Rectangle::new(BLACK).draw(curr, &c.draw_state, c.transform, gl);
+                // let [x, y] = self.range.get(i).unwrap();
+                // rectangle(LINE, [*x, *y, 2.0, 2.0], c.transform, gl);
             }
             
         });
@@ -60,19 +65,20 @@ fn main() {
     let opengl = OpenGL::V3_2;
 
     // Create a Glutin window.
-    let mut window: Window = WindowSettings::new("forust", [800, 800])
+    let mut window: Window = WindowSettings::new("forust", [600, 600])
         .graphics_api(opengl)
         .exit_on_esc(true)
         .build()
         .unwrap();
 
-    let input = "y = (x**2)**0.5";
+    let input = "y = x**3";
+    let dims = (-600, 600);
     // Create a new game and run it.
     let mut app = App {
         gl: GlGraphics::new(opengl),
-        range: forust::evaluate(input, -800, 800, -800, 800)
+        range: forust::evaluate(input, dims, dims)
             .iter()
-            .map(|[x, y]| [*x, 800.0 - *y])
+            .map(|[x, y]| [*x, -*y])
             .collect(),
     };
 
