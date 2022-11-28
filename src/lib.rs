@@ -1,13 +1,13 @@
 mod scanner;
 mod parser;
 
-pub use crate::forust::evaluate;
+pub use crate::algebra_eval::evaluate;
 
-pub mod forust {
+pub mod algebra_eval {
     use crate::scanner::{Scanner};
     use crate::parser::{parse, equal};
     
-    pub fn evaluate(input: &str, (minx, maxx): (i32, i32), (miny, maxy): (i32, i32)) -> Vec<[f64; 2]>{
+    pub fn evaluate(input: &str, [minx, maxx]: [i32; 2], [miny, maxy]: [i32; 2]) -> Vec<[f64; 2]>{
         let mut scanner = Scanner::new(input);
         scanner.tokenize();
         let result = match parse(&mut scanner.tokens) {
@@ -45,7 +45,7 @@ pub mod forust {
 
 #[cfg(test)]
 mod tests {
-    use crate::forust::solve;
+    use crate::algebra_eval::solve;
     // use super::*;
     use crate::scanner::{Scanner, Token};
     use crate::parser::{parse, Equation, Expr};
